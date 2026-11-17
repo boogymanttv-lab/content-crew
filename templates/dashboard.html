@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<div>
+  <h1>Your brands</h1>
+  <p class="notice">One brand per niche. Each brand has its own voice, rules and channels, and its own crew of agents.</p>
+</div>
+
+{% if not live %}
+<div class="flash">Demo mode: no Anthropic key is set, so agents return sample text. Set ANTHROPIC_API_KEY to use Claude.</div>
+{% endif %}
+
+<section class="grid">
+  {% for b in brands %}
+  <a class="card" href="{{ url_for('brand_page', brand_id=b.id) }}" style="text-decoration:none;color:inherit">
+    <h3>{{ b.name }}</h3>
+    <span class="notice">{{ b.niche }}</span>
+    <span class="notice">{{ b.channel_count }} channel(s) · {{ b.queued }} post(s) queued</span>
+  </a>
+  {% else %}
+  <div class="card"><span class="notice">No brands yet. Create the first one below.</span></div>
+  {% endfor %}
+</section>
+
+<section class="panel">
+  <h2>New brand</h2>
+  <form method="post" action="{{ url_for('create_brand') }}" class="panel" style="border:0;padding:0">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div class="row">
+      <div class="field"><label for="name">Brand name</label><input type="text" id="name" name="name" required maxlength="80"></div>
+      <div class="field"><label for="niche">Niche</label><input type="text" id="niche" name="niche" required maxlength="200" placeholder="AI automation for small businesses"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label for="audience">Audience</label><input type="text" id="audience" name="audience" maxlength="300" placeholder="Owners of local service businesses"></div>
+      <div class="field"><label for="tone">Tone</label><input type="text" id="tone" name="tone" maxlength="200" placeholder="Clear, practical, no hype"></div>
+      <div class="field"><label for="language">Language</label><input type="text" id="language" name="language" maxlength="40" value="English"></div>
+    </div>
+    <div class="field"><label for="rules">Brand rules (what the agents must or must not do)</label><textarea id="rules" name="rules" maxlength="600"></textarea></div>
+    <div><button class="primary" type="submit">Create brand</button></div>
+  </form>
+</section>
+
+<p class="foot">
+  AI usage this month: {{ usage.calls if usage else 0 }} agent call(s){% if usage and usage.input_tokens %}, {{ usage.input_tokens }} input and {{ usage.output_tokens }} output tokens{% endif %}.
+</p>
+{% endblock %}

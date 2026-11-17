@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}{{ brand.name }}{% endblock %}
+{% block content %}
+<div>
+  <p class="notice"><a href="{{ url_for('dashboard') }}">All brands</a></p>
+  <h1>{{ brand.name }}</h1>
+  <p class="notice">{{ brand.niche }}{% if brand.audience %} · for {{ brand.audience }}{% endif %} · {{ brand.language }}</p>
+</div>
+
+<section class="panel">
+  <h2>Channels</h2>
+  <div class="grid">
+    {% for c in channels %}
+    <div class="card">
+      <strong>{{ c.platform }}</strong>
+      <span>@{{ c.handle }}</span>
+      <span class="notice">{{ PROVIDER_LABELS.get(c.provider, c.provider) }}</span>
+      <form method="post" action="{{ url_for('delete_channel', brand_id=brand.id, channel_id=c.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button class="small ghost danger" type="submit">Remove</button>
+      </form>
+    </div>
+    {% else %}
+    <div class="card"><span class="notice">No channels yet. Add the accounts this brand posts to.</span></div>
+    {% endfor %}
+  </div>
+  <form method="post" action="{{ url_for('add_channel', brand_id=brand.id) }}" class="row">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div class="field"><label for="platform">Platform</label>
+      <select id="platform" name="platform">{% for p in PLATFORMS %}<option>{{ p }}</option>{% endfor %}</select></div>
+    <div class="field"><label for="handle">Account handle</label><input type="text" id="handle" name="handle" required maxlength="60"></div>
+    <button type="submit">Add channel</button>
+  </form>
+</section>
+
+<section class="panel">
+  <h2>Crew runs</h2>
+  <form method="post" action="{{ url_for('new_run', brand_id=brand.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button class="primary" type="submit" {% if not channels %}disabled{% endif %}>Start a new run</button>
+  </form>
+  {% for r in runs %}
+  <a class="card" href="{{ url_for('run_page', run_id=r.id) }}" style="text-decoration:none;color:inherit">
+    <strong>{{ run_topics[r.id] }}</strong>
+    <span class="notice">Run {{ r.id }} · stage: {{ r.stage }} · {{ r.created_at }} UTC</span>
+  </a>
+  {% endfor %}
+</section>
+
+<section class="panel" id="queue">
+  <h2>Post queue</h2>
+  <form method="post" action="{{ url_for('publish_due', brand_id=brand.id) }}" class="row">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button type="submit">Publish posts that are due</button>
+    <span class="notice">Now: {{ now }} UTC. Publishing is simulated until a real provider is connected.</span>
+  </form>
+  <div class="tablewrap"><table>
+    <thead><tr><th>When (UTC)</th><th>Channel</th><th>Topic</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+    {% for p in posts %}
+    <tr>
+      <td class="t">{{ p.scheduled_at }}</td>
+      <td>{{ p.platform }} @{{ p.handle }}</td>
+      <td>{{ post_titles[p.id] }}</td>
+      <td><span class="pill {{ p.status }}">{{ p.status }}{% if p.status == 'published' %} (simulated){% endif %}</span>{% if p.error %}<div class="notice">{{ p.error }}</div>{% endif %}</td>
+      <td>{% if p.status == 'scheduled' %}
+        <form method="post" action="{{ url_for('cancel_post', post_id=p.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="small ghost danger" type="submit">Cancel</button></form>{% endif %}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5" class="notice">Approved posts appear here.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+</section>
+
+<section class="panel" id="results">
+  <h2>Results</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Channel</th><th>Posts</th><th>Published</th><th>Views</th><th>Likes</th><th>New followers</th><th>Leads</th></tr></thead>
+    <tbody>
+    {% for t in totals %}
+    <tr><td>{{ t.platform }} @{{ t.handle }}</td><td>{{ t.posts }}</td><td>{{ t.published }}</td><td>{{ t.views }}</td><td>{{ t.likes }}</td><td>{{ t.followers }}</td><td>{{ t.leads }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  <p class="notice">Enter the numbers from each platform after a post has gone out. Automatic collection comes with a real provider.</p>
+  {% for p in posts if p.status == 'published' %}
+  <form method="post" action="{{ url_for('post_metrics', post_id=p.id) }}" class="card">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <strong>{{ p.platform }} @{{ p.handle }} · {{ post_titles[p.id] }}</strong>
+    <div class="row">
+      <div class="field"><label for="v{{ p.id }}">Views</label><input type="number" min="0" id="v{{ p.id }}" name="views" value="{{ p.views }}"></div>
+      <div class="field"><label for="l{{ p.id }}">Likes</label><input type="number" min="0" id="l{{ p.id }}" name="likes" value="{{ p.likes }}"></div>
+      <div class="field"><label for="f{{ p.id }}">New followers</label><input type="number" min="0" id="f{{ p.id }}" name="followers" value="{{ p.followers_gained }}"></div>
+      <div class="field"><label for="d{{ p.id }}">Leads</label><input type="number" min="0" id="d{{ p.id }}" name="leads" value="{{ p.leads }}"></div>
+      <button class="small" type="submit">Save</button>
+    </div>
+  </form>
+  {% endfor %}
+</section>
+
+<section class="panel">
+  <h2>Danger zone</h2>
+  <form method="post" action="{{ url_for('delete_brand', brand_id=brand.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button class="danger" type="submit">Delete this brand and everything in it</button>
+  </form>
+</section>
+{% endblock %}

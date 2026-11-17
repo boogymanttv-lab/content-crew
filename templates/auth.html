@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Create account' if mode == 'register' else 'Log in' }}{% endblock %}
+{% block content %}
+<form method="post" class="panel auth">
+  <h1>{{ 'Create your account' if mode == 'register' else 'Log in' }}</h1>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <div class="field"><label for="email">Email</label><input type="email" id="email" name="email" required autocomplete="email"></div>
+  <div class="field"><label for="password">Password</label><input type="password" id="password" name="password" required minlength="8" autocomplete="{{ 'new-password' if mode == 'register' else 'current-password' }}"></div>
+  <button class="primary" type="submit">{{ 'Create account' if mode == 'register' else 'Log in' }}</button>
+  <p class="notice">
+    {% if mode == 'register' %}Already have an account? <a href="{{ url_for('login') }}">Log in</a>
+    {% else %}No account yet? <a href="{{ url_for('register') }}">Create one</a>{% endif %}
+  </p>
+</form>
+{% endblock %}
