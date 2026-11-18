@@ -68,3 +68,36 @@ td input[type=number] { width: 84px; padding: 6px 8px; }
 .inline { display: inline; }
 .foot { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding-top: 14px; }
 .auth { max-width: 380px; margin: 40px auto; }
+/* Fields inside a column container must not use their flex-basis as a height. */
+.panel > .field, .card > .field, form.panel > .field { flex: 0 0 auto; }
+.tablewrap { -webkit-overflow-scrolling: touch; }
+
+/* Phones */
+@media (max-width: 640px) {
+  body { font-size: 16px; padding-bottom: env(safe-area-inset-bottom); }
+  h1 { font-size: 20px; }
+  .bar { position: sticky; top: 0; z-index: 5; }
+  .bar-in { padding: 10px 12px; flex-wrap: nowrap; }
+  .bar-in form { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .bar .notice { max-width: 42vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .wrap { padding: 16px 12px 40px; gap: 18px; }
+  .panel { padding: 14px; gap: 12px; }
+  .auth { margin: 16px 0; max-width: none; align-self: stretch; }
+  .row { flex-direction: column; align-items: stretch; gap: 12px; }
+  .row .field { flex: 0 0 auto; width: 100%; }
+  .grid { grid-template-columns: 1fr; }
+  input[type=text], input[type=email], input[type=password], input[type=number], input[type=datetime-local], select, textarea {
+    font-size: 16px; padding: 12px; min-height: 46px; -webkit-appearance: none; appearance: none;
+  }
+  select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 34px; }
+  textarea { min-height: 96px; }
+  button, .btn { min-height: 48px; }
+  .panel button:not(.small), .panel .btn { width: 100%; justify-content: center; }
+  .card button.small { width: 100%; justify-content: center; min-height: 44px; }
+  .steps { grid-template-columns: repeat(2, 1fr); }
+  .step:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .hookline { font-size: 17px; }
+  .thumb { font-size: 20px; padding: 14px; }
+  td input[type=number] { width: 72px; }
+  .foot { padding-bottom: 8px; }
+}
